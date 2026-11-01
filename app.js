@@ -2,6 +2,8 @@
 const definitions=[['single','1 stor',1,1,1],['bottom2','2 nederst',2,2,1],['bottom4','4 nederst',4,4,1],['bottom6','6 nederst',6,6,1],['grid4','4 fullskjerm',4,2,2],['grid6','6 fullskjerm',6,3,2]];
 const $=id=>document.getElementById(id);
 let state, draft, tiles=[], signature='', toastTimer, saving=false;
+const presentationView = location.pathname==='/view' && new URLSearchParams(location.search).get('presentation')==='1';
+let presentationController;
 async function api(url,data){const res=await fetch(url,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await res.json();if(!res.ok)throw Error(result.error||'Serverfeil');return result;}
 function toast(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3000);}
 function settings(){return location.pathname!=='/view';}
@@ -17,13 +19,35 @@ function editor(){
 }
 async function save(){if(saving)return false;saving=true;try{draft.background=$('background').value;draft.active=state.active;state=await api('/api/settings',draft);$('status').textContent='Lagret';return true;}catch(e){$('status').textContent=e.message;return false;}finally{saving=false;}}
 function scale(){const s=Math.min(innerWidth/1920,innerHeight/1080);Object.assign($('stage').style,{transform:'scale('+s+')',left:(innerWidth-1920*s)/2+'px',top:(innerHeight-1080*s)/2+'px'});}
-function render(){document.body.classList.toggle('transparent',!settings()&&state.background==='transparent');if(settings())return;const p=state.presets[state.active-1];const key=JSON.stringify(p);if(key===signature)return;signature=key;tiles=[];$('stage').replaceChildren();const def=definitions.find(d=>d[0]===p.layout);const cols=def[3],rows=def[4],bottom=p.layout.startsWith('bottom');p.lanes.forEach((lane,i)=>{const el=document.createElement('div');el.className='tile'+(bottom?' bottom':'');const w=1920/cols,h=bottom?1080:1080/rows;Object.assign(el.style,{width:w+'px',height:h+'px',left:(i%cols)*w+'px',top:(bottom?0:Math.floor(i/cols)*h)+'px'});const img=document.createElement('img');img.alt='Bane '+lane;const error=document.createElement('span');error.className='error';error.hidden=true;el.append(img,error);$('stage').append(el);tiles.push({lane,img,error,loading:false});});refresh();}
+function render(){document.body.classList.toggle('transparent',!settings()&&state.background==='transparent');document.body.classList.toggle('chroma-green',!settings()&&state.background==='chroma-green');if(settings()){for(const active of [1,2])$('live-'+active).setAttribute('aria-pressed',String(state.active===active));return;}const p=state.presets[state.active-1];const key=JSON.stringify(p);if(key===signature)return;signature=key;tiles=[];$('stage').replaceChildren();const def=definitions.find(d=>d[0]===p.layout);const cols=def[3],rows=def[4],bottom=p.layout.startsWith('bottom');p.lanes.forEach((lane,i)=>{const el=document.createElement('div');el.className='tile'+(bottom?' bottom':'');const factor=p.layout==='bottom2'?0.67:1;const w=1920/cols*factor,h=(bottom?1080:1080/rows)*factor;const offsetX=(1920-cols*w)/2;Object.assign(el.style,{width:w+'px',height:h+'px',left:(offsetX+(i%cols)*w)+'px',top:(bottom?1080-h:Math.floor(i/cols)*h)+'px'});const img=document.createElement('img');img.hidden=true;img.alt='Bane '+lane;const error=document.createElement('span');error.className='error';error.hidden=true;el.append(img,error);$('stage').append(el);tiles.push({lane,img,error,loading:false});});refresh();}
 async function refreshTile(tile){if(tile.loading)return;tile.loading=true;const image=new Image();let timer;try{await new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(Error('Tidsavbrudd')),4000);image.onload=resolve;image.onerror=()=>reject(Error('Utilgjengelig'));image.src='/image/'+tile.lane+'?t='+Date.now();});tile.img.replaceWith(image);tile.img=image;image.alt='Bane '+tile.lane;tile.error.hidden=true;}catch(e){tile.error.textContent='Bane '+tile.lane+': '+e.message;tile.error.hidden=false;}finally{clearTimeout(timer);tile.loading=false;}}
 function refresh(){tiles.forEach(refreshTile);}
-function route(){const edit=settings();$('settings').hidden=!edit;$('output').hidden=edit;if(edit){draft=structuredClone(state);editor();}else{signature='';scale();}render();}
-async function fullscreen(){try{await document.documentElement.requestFullscreen();toast('Esc avslutter fullskjerm · 1 / 2 bytter oppsett');}catch{toast('Fullskjerm utilgjengelig. Bruk F11 i nettleseren.');}}
+function route(){const edit=settings();if(edit)ensurePresentationController();$('settings').hidden=!edit;$('output').hidden=edit;if(edit){draft=structuredClone(state);editor();}else{signature='';scale();}render();viewerControls();}
+function viewerControls(){ $('viewer-controls').hidden=settings() || !presentationView || Boolean(document.fullscreenElement); }
+async function fullscreen(automatic=false){
+ try {
+  await document.documentElement.requestFullscreen({navigationUI:'hide'});
+  viewerControls();
+  if(!automatic)toast('Esc avslutter fullskjerm · 1 / 2 bytter oppsett');
+ } catch {
+  viewerControls();
+  if(!automatic)toast('Fullskjerm utilgjengelig. Bruk F11 i nettleseren.');
+ }
+}
+async function returnToPanel(){
+ if(presentationView && window.opener && !window.opener.closed){window.opener.focus();window.close();return;}
+ if(document.fullscreenElement)await document.exitFullscreen();
+ history.pushState({},'','/settings');route();
+}
+$('viewer-fullscreen').onclick=()=>fullscreen();
+$('viewer-return').onclick=returnToPanel;
+document.addEventListener('fullscreenchange',viewerControls);
 $('save').onclick=save;
-$('launch').onclick=()=>{fullscreen();save().then(ok=>{if(ok){history.pushState({},'','/view');route();}else if(document.fullscreenElement)document.exitFullscreen();});};
+function ensurePresentationController(){
+ if(presentationController)return;
+ presentationController=new PresentationController({save,changeLayout:async active=>{state=await api('/api/layout/'+active,{});render();}});
+ presentationController.init();
+}
 addEventListener('popstate',route);addEventListener('resize',scale);
-document.addEventListener('keydown',async e=>{if(settings()||e.repeat||e.ctrlKey||e.altKey||e.metaKey)return;if(['1','2'].includes(e.key)){try{state=await api('/api/layout/'+e.key,{});render();}catch(err){toast(err.message);}}if(e.key.toLowerCase()==='f')fullscreen();if(e.key.toLowerCase()==='s'){if(document.fullscreenElement)await document.exitFullscreen();history.pushState({},'','/settings');route();}});
-(async()=>{try{state=await api('/api/state');route();const events=new EventSource('/api/events');events.onmessage=e=>{state=JSON.parse(e.data);render();};events.onerror=()=>{if(!settings())toast('Mistet serverforbindelsen. Kobler til igjen …');};setInterval(refresh,5000);}catch(e){$('settings').hidden=false;$('status').textContent='Kan ikke kontakte serveren: '+e.message;}})();
+document.addEventListener('keydown',async e=>{if(settings()||e.repeat||e.ctrlKey||e.altKey||e.metaKey)return;if(['1','2'].includes(e.key)){try{state=await api('/api/layout/'+e.key,{});render();}catch(err){toast(err.message);}}if(e.key.toLowerCase()==='f')fullscreen();if(e.key.toLowerCase()==='s')await returnToPanel();});
+(async()=>{try{state=await api('/api/state');route();if(presentationView){viewerControls();fullscreen(true);}const events=new EventSource('/api/events');events.onmessage=e=>{state=JSON.parse(e.data);render();};events.onerror=()=>{if(!settings())toast('Mistet serverforbindelsen. Kobler til igjen …');};setInterval(refresh,5000);}catch(e){$('settings').hidden=false;$('status').textContent='Kan ikke kontakte serveren: '+e.message;}})();

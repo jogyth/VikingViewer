@@ -9,7 +9,7 @@ const ROOT = __dirname;
 const DRIVE_BY_LANE = config.drives.flatMap(drive => [drive + ':', drive + ':']);
 const layouts = { single: 1, bottom2: 2, bottom4: 4, bottom6: 6, grid4: 4, grid6: 6 };
 const defaults = () => ({ background: 'black', active: 1, presets: [{ layout: 'grid4', lanes: [1,2,3,4] }, { layout: 'bottom2', lanes: [5,6] }] });
-function valid(s) { return s && ['black','transparent'].includes(s.background) && [1,2].includes(s.active) && Array.isArray(s.presets) && s.presets.length === 2 && s.presets.every(p => p && Object.hasOwn(layouts,p.layout) && Array.isArray(p.lanes) && p.lanes.length === layouts[p.layout] && p.lanes.every(n => Number.isInteger(n) && n >= 1 && n <= 16) && new Set(p.lanes).size === p.lanes.length); }
+function valid(s) { return s && ['black','transparent','chroma-green'].includes(s.background) && [1,2].includes(s.active) && Array.isArray(s.presets) && s.presets.length === 2 && s.presets.every(p => p && Object.hasOwn(layouts,p.layout) && Array.isArray(p.lanes) && p.lanes.length === layouts[p.layout] && p.lanes.every(n => Number.isInteger(n) && n >= 1 && n <= 16) && new Set(p.lanes).size === p.lanes.length); }
 const settingsPath = path.join(ROOT, 'settings.json');
 let state = defaults();
 try { const saved = JSON.parse(fs.readFileSync(settingsPath,'utf8')); if (valid(saved)) state = saved; } catch(e) { if(e.code !== 'ENOENT') console.warn('Kunne ikke lese innstillinger. Bruker standardoppsett.'); }
@@ -20,9 +20,15 @@ const server = http.createServer((req,res) => {
  const url = new URL(req.url, 'http://localhost:3000');
  if (req.headers.origin && !['http://localhost:3000','http://127.0.0.1:3000'].includes(req.headers.origin)) return json(res,403,{error:'Ukjent origin'});
  if (url.pathname === '/') { res.writeHead(302,{Location:'/settings'}); return res.end(); }
- if (['/settings','/view','/app.js','/style.css'].includes(url.pathname) && req.method === 'GET') {
-  const file = url.pathname === '/app.js' ? 'app.js' : url.pathname === '/style.css' ? 'style.css' : 'index.html';
+ if (['/settings','/view','/app.js','/presentation.js','/style.css'].includes(url.pathname) && req.method === 'GET') {
+  const file = url.pathname === '/presentation.js' ? 'presentation.js' : url.pathname === '/app.js' ? 'app.js' : url.pathname === '/style.css' ? 'style.css' : 'index.html';
   res.writeHead(200,{'Content-Type': file.endsWith('.js') ? 'text/javascript; charset=utf-8' : file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/html; charset=utf-8','Cache-Control':'no-store'}); return fs.createReadStream(path.join(ROOT,file)).pipe(res);
+ }
+ if (url.pathname === '/img/sundvolden_TV_logo.png' && req.method === 'GET') {
+  return fs.readFile(path.join(ROOT,'img','sundvolden_TV_logo.png'),(err,data)=>{
+   if(err) {res.writeHead(404);return res.end('Not found');}
+   res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'no-cache','Content-Length':data.length});res.end(data);
+  });
  }
  if (url.pathname === '/api/state' && req.method === 'GET') return json(res,200,state);
  if (url.pathname === '/api/events' && req.method === 'GET') {
