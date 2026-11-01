@@ -11,12 +11,19 @@ En lettvektsvisning av Viking Scoring for sending, storskjerm og OBS.
 ![Windows](https://img.shields.io/badge/Platform-Windows-0078D4?style=flat-square)
 ![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![Zero dependencies](https://img.shields.io/badge/Dependencies-0-22C55E?style=flat-square)
+[![Bidra med issues og kode](https://img.shields.io/badge/Bidra-Issues%20%26%20PRs-2563EB?style=for-the-badge)](#bidra)
+[![Støtt med Vipps til 93830550](https://img.shields.io/badge/Vipps-93830550-FF5B24?style=for-the-badge)](#støtt-prosjektet)
 
 [Kom i gang](#kom-i-gang) · [Layouter](#layouter) · [Skjermvalg](#velg-visningsskjerm) · [Konfigurasjon](#konfigurasjon) · [Companion](#bitfocus-companion) · [Feilsøking](#feilsøking) · [Bidra](#bidra) · [Støtt prosjektet](#støtt-prosjektet) · [Lisens](#lisens)
 
 </div>
 
 ---
+
+> [!TIP]
+> **Bli med og gjør VikingViewer bedre!**
+> Rapporter feil, foreslå funksjoner eller send en pull request — [se hvordan du kan bidra](#bidra).
+> Har du glede av programmet? Støtt gjerne utviklingen med **Vipps til 93830550**, merket «VikingViewer». Takk for støtten! 💙
 
 ## Én visning, flere måter å sende på
 
