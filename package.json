@@ -2,6 +2,7 @@
   "name": "vikingviewer",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Lightweight viewer for Viking Scoring lane images",
   "engines": {
     "node": ">=22"

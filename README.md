@@ -12,7 +12,7 @@ En lettvektsvisning av Viking Scoring for sending, storskjerm og OBS.
 ![Vanilla JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
 ![Zero dependencies](https://img.shields.io/badge/Dependencies-0-22C55E?style=flat-square)
 
-[Kom i gang](#kom-i-gang) · [Layouter](#layouter) · [Skjermvalg](#velg-visningsskjerm) · [Konfigurasjon](#konfigurasjon) · [Companion](#bitfocus-companion) · [Feilsøking](#feilsøking)
+[Kom i gang](#kom-i-gang) · [Layouter](#layouter) · [Skjermvalg](#velg-visningsskjerm) · [Konfigurasjon](#konfigurasjon) · [Companion](#bitfocus-companion) · [Feilsøking](#feilsøking) · [Bidra](#bidra) · [Støtt prosjektet](#støtt-prosjektet) · [Lisens](#lisens)
 
 </div>
 
@@ -248,6 +248,28 @@ Test-NetConnection slave1 -Port 445
 Bytt ut `slave1` hvis du har endret maskinprefikset. Skriptet endrer ikke DNS-oppsett eller gjetter IP-adresser.
 
 </details>
+
+## Bidra
+
+Feilrapporter, forslag og kodebidrag er velkomne! Har du brukt VikingViewer i en bowlinghall eller sending, hører vi gjerne hva som fungerer og hva som kan bli bedre.
+
+- **Funnet en feil?** [Opprett en issue](https://github.com/jogyth/VikingViewer/issues/new) med hva du gjorde, hva du forventet og hva som skjedde. Ta gjerne med Windows- og nettleserversjon, relevante feilmeldinger og et skjermbilde.
+- **Savner du en funksjon?** [Del forslaget i en issue](https://github.com/jogyth/VikingViewer/issues/new), og beskriv hvordan du vil bruke den.
+- **Vil du bidra med kode eller dokumentasjon?** Pull requests er velkomne. Ved større endringer er det fint å diskutere løsningen i en issue først. Beskriv endringen og hvordan den er kontrollert; kjør `npm test` ved kodeendringer.
+
+[Sjekk eksisterende issues](https://github.com/jogyth/VikingViewer/issues) før du oppretter en ny. Ikke legg ved `.env`, passord eller annen sensitiv informasjon. Sladd personopplysninger i skjermbilder og logger.
+
+## Støtt prosjektet
+
+Har du nytte av VikingViewer? En frivillig donasjon bidrar til videre utvikling og vedlikehold. Alle bidrag settes pris på!
+
+**Vipps til 93830550** — merk gjerne betalingen «VikingViewer».
+
+VikingViewer er gratis og åpen kildekode. Donasjoner er helt frivillige og gir ingen garanti for bestemte funksjoner eller svartid. Du kan også støtte prosjektet ved å rapportere feil, bidra med kode eller dokumentasjon, eller gi det en ⭐ på GitHub.
+
+## Lisens
+
+VikingViewer er åpen kildekode under [MIT-lisensen](LICENSE). Du kan bruke, endre og dele programmet, også kommersielt, så lenge opphavsrettsmerknaden og lisensvilkårene følger med. Programmet leveres uten garanti; se lisensen for fullstendige vilkår.
 
 ## Utvikling
 
